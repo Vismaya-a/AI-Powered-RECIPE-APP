@@ -1,0 +1,94 @@
+# ==============
+# OS & editors
+# ==============
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+*.swp
+*.swo
+*.bak
+
+.vscode/
+.idea/
+
+# ==============
+# Backend (Python)
+# ==============
+# Python caches & build artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+
+# Virtualenvs (common names) anywhere in repo
+# this covers backend/myenv, backend/.venv, myenv/ etc.
+venv/
+env/
+.venv/
+myenv/
+backend/myenv/
+backend/.venv/
+backend/env/
+
+# Database files
+*.sqlite3
+*.db
+*.sqlite
+
+# Python tooling cache
+.mypy_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Backend env files (do NOT commit secrets)
+# ignores backend/.env and any .env in backend subfolder
+backend/.env
+backend/.env.*
+.env
+.env.*
+
+# keep sample .env if you want to version it
+!.env.example
+!backend/.env.example
+
+# ==============
+# Frontend (Node)
+# ==============
+
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+frontend/node_modules
+
+# Build outputs and caches
+dist/
+build/
+.next/
+out/
+frontend/.cache/
+
+# Frontend envs (do NOT commit secrets)
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
+
+# package lock (optional to ignore if you commit lock)
+# package-lock.json
+# yarn.lock
+
+# ==============
+# Misc / security
+# ==============
+*.pem
+*.key
+*.crt
+*.p12
+
+# Temp files
+tmp/
+temp/
+logs/

@@ -96,5 +96,4 @@ class LeftoverIngredient(SQLModel, table=True):
     
     # Relationships - CHANGED TO STRINGS
     user: "User" = Relationship(back_populates="leftover_ingredients")
-    # Remove this relationship too since we don't need it
-    # source_recipe: Optional["SavedRecipe"] = Relationship(back_populates="leftover_ingredients")
+  

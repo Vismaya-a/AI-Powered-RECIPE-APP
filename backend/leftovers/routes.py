@@ -37,20 +37,6 @@ async def add_new_leftover_ingredient(
     leftover = await add_leftover_ingredient(session, current_user.id, leftover_data)
     return leftover
 
-# @router.post("/transform", response_model=List[TransformationSuggestion])
-# async def transform_leftovers(
-#     request: LeftoverTransformRequest,
-#     current_user: User = Depends(get_current_user),
-#     session: AsyncSession = Depends(get_session)
-# ):
-#     try:
-#         transformations = await leftover_service.transform_leftovers(
-#             request.leftover_ingredients,
-#             request.language
-#         )
-#         return transformations
-#     except Exception as e:
-#         raise HTTPException(status_code=500, detail=str(e))
 @router.post("/transform", response_model=List[TransformationSuggestion])
 async def transform_leftovers(
     request: LeftoverTransformRequest,  # Remove this - we don't need user input

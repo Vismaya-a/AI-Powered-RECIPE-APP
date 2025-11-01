@@ -4,24 +4,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from db.models import User, UserTasteProfile
 from users.schemas import TasteProfileUpdate
 
-# In service.py, modify get_user_profile function:
-# async def get_user_profile(session: AsyncSession, user_id: int) -> dict:
-#     result = await session.execute(
-#         select(User).where(User.id == user_id)
-#     )
-#     user = result.scalar_one_or_none()
-    
-#     # Convert to dictionary for Pydantic response
-#     user_dict = {
-#         "id": user.id,
-#         "username": user.username,
-#         "email": user.email,
-#         "preferred_language": user.preferred_language,
-#         "created_at": user.created_at,
-#         "taste_profile": user.taste_profile.dict() if user.taste_profile else None
-#     }
-#     return user_dict
-
 async def get_user_profile(session: AsyncSession, user_id: int) -> dict:
     # Get user
     result = await session.execute(

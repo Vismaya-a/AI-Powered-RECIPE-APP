@@ -15,21 +15,7 @@ async def get_pantry_items(
     )
     return result.scalars().all()
 
-# async def add_pantry_item(
-#     session: AsyncSession,
-#     user_id: int,
-#     item_data: PantryItemCreate
-# ) -> PantryItem:
-    
-#     item = PantryItem(
-#         user_id=user_id,
-#         **item_data.dict()
-#     )
-    
-#     session.add(item)
-#     await session.commit()
-#     await session.refresh(item)
-#     return item
+
 async def add_pantry_item(
     session: AsyncSession,
     user_id: int,
@@ -54,33 +40,7 @@ async def add_pantry_item(
     await session.commit()
     await session.refresh(item)
     return item
-# async def bulk_update_pantry(
-#     session: AsyncSession,
-#     user_id: int,
-#     items: List[PantryItemCreate]
-# ) -> List[PantryItem]:
-    
-#     # Clear existing items
-#     result = await session.execute(select(PantryItem).where(PantryItem.user_id == user_id))
-#     existing_items = result.scalars().all()
-    
-#     for item in existing_items:
-#         await session.delete(item)
-    
-#     # Add new items
-#     new_items = []
-#     for item_data in items:
-#         item = PantryItem(user_id=user_id, **item_data.dict())
-#         session.add(item)
-#         new_items.append(item)
-    
-#     await session.commit()
-    
-#     # Refresh all new items
-#     for item in new_items:
-#         await session.refresh(item)
-    
-#     return new_items
+
 async def bulk_update_pantry(
     session: AsyncSession,
     user_id: int,

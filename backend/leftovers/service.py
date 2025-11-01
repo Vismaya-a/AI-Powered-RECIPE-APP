@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Dict, Any
 
 from db.models import LeftoverIngredient
-from leftovers.schemas import LeftoverIngredientCreate
+from leftovers.schemas import LeftoverIngredientBase
 
 class LeftoverService:
     def __init__(self):
@@ -78,7 +78,7 @@ async def get_leftover_ingredients(
 async def add_leftover_ingredient(
     session: AsyncSession,
     user_id: int,
-    leftover_data: LeftoverIngredientCreate
+    leftover_data: LeftoverIngredientBase
 ) -> LeftoverIngredient:
     
     leftover = LeftoverIngredient(

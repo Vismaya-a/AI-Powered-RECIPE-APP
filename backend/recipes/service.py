@@ -57,102 +57,102 @@ class RecipeService:
         except Exception as e:
             raise Exception(f"Error generating suggestions: {str(e)}")
     
-    # def _build_recipe_prompt(
-    #     self, 
-    #     request: RecipeGenerationRequest, 
-    #     taste_profile: UserTasteProfile,
-    #     language: str
-    # ) -> str:
-        
-    #     prompt = f"""
-    #     Generate a detailed recipe in {language} with the following requirements:
-        
-    #     Main ingredient/theme: {request.theme}
-        
-    #     User preferences:
-    #     - Spice level: {taste_profile.spice_level if taste_profile else 2}/5
-    #     - Oil preference: {taste_profile.oil_preference if taste_profile else 'moderate'}
-    #     - Cooking time: {taste_profile.cooking_time_preference if taste_profile else 30} minutes preferred
-    #     - Likes: {', '.join(taste_profile.likes) if taste_profile and taste_profile.likes else 'None specified'}
-    #     - Dislikes: {', '.join(taste_profile.dislikes) if taste_profile and taste_profile.dislikes else 'None'}
-    #     - Dietary: {', '.join(taste_profile.dietary_preferences) if taste_profile and taste_profile.dietary_preferences else 'None'}
-        
-    #     Please provide the recipe in this exact JSON format:
-    #     {{
-    #         "title": "Recipe Title",
-    #         "description": "Brief description",
-    #         "ingredients": [
-    #             {{"name": "ingredient", "quantity": "amount", "unit": "unit"}}
-    #         ],
-    #         "instructions": ["step 1", "step 2", ...],
-    #         "cooking_time": as provided in user preferences,
-    #         "difficulty": "Easy/Medium/Hard",
-    #         "servings": 4,
-    #         "nutrition_info": {{
-    #             "calories": "approx calories",
-    #             "protein": "g",
-    #             "carbs": "g",
-    #             "fat": "g"
-    #         }},
-    #         "tags": ["tag1", "tag2", ...]
-    #     }}
-    #     """
-    #     return prompt
     def _build_recipe_prompt(
-    self, 
-    request: RecipeGenerationRequest, 
-    taste_profile: UserTasteProfile,
-    language: str
-) -> str:
-    
+        self, 
+        request: RecipeGenerationRequest, 
+        taste_profile: UserTasteProfile,
+        language: str
+    ) -> str:
+        
         prompt = f"""
-        LANGUAGE REQUIREMENT: YOU MUST RESPOND COMPLETELY IN {language.upper()} LANGUAGE.
-        DO NOT USE ANY OTHER LANGUAGE. EVERY SINGLE WORD, TITLE, DESCRIPTION, INGREDIENT NAME, INSTRUCTION, AND TAG MUST BE WRITTEN IN {language}.
+        Generate a detailed recipe in {language} with the following requirements:
         
-        Generate a detailed recipe with the following requirements:
-        
-        Theme: {request.theme}
-        Language: {language}
-        Use pantry: {request.use_pantry}
+        Main ingredient/theme: {request.theme}
         
         User preferences:
         - Spice level: {taste_profile.spice_level if taste_profile else 2}/5
         - Oil preference: {taste_profile.oil_preference if taste_profile else 'moderate'}
-        - Cooking time: {taste_profile.cooking_time_preference if taste_profile else 30} minutes
-        - Likes: {', '.join(taste_profile.likes) if taste_profile and taste_profile.likes else 'None'}
+        - Cooking time: {taste_profile.cooking_time_preference if taste_profile else 30} minutes preferred
+        - Likes: {', '.join(taste_profile.likes) if taste_profile and taste_profile.likes else 'None specified'}
         - Dislikes: {', '.join(taste_profile.dislikes) if taste_profile and taste_profile.dislikes else 'None'}
         - Dietary: {', '.join(taste_profile.dietary_preferences) if taste_profile and taste_profile.dietary_preferences else 'None'}
-        - Allergies: {', '.join(taste_profile.allergies) if taste_profile and taste_profile.allergies else 'None'}
         
-        FORMAT REQUIREMENTS:
-        - All content must be in {language}
-        - Use local ingredient names in {language}
-        - Use local measurement units appropriate for {language}
-        - Use cooking terms familiar in {language}-speaking regions
-        
-        JSON Response Format (all fields in {language}):
+        Please provide the recipe in this exact JSON format:
         {{
-            "title": "Recipe title in {language}",
-            "description": "Description in {language}",
+            "title": "Recipe Title",
+            "description": "Brief description",
             "ingredients": [
-                {{"name": "ingredient in {language}", "quantity": "amount", "unit": "unit in {language}"}}
+                {{"name": "ingredient", "quantity": "amount", "unit": "unit"}}
             ],
-            "instructions": ["step in {language}", "step in {language}"],
+            "instructions": ["step 1", "step 2", ...],
             "cooking_time": as provided in user preferences,
-            "difficulty": "difficulty level in {language}",
+            "difficulty": "Easy/Medium/Hard",
             "servings": 4,
             "nutrition_info": {{
-                "calories": "approx",
+                "calories": "approx calories",
                 "protein": "g",
-                "carbs": "g", 
+                "carbs": "g",
                 "fat": "g"
             }},
-            "tags": ["tag in {language}"]
+            "tags": ["tag1", "tag2", ...]
         }}
-        
-        FINAL REMINDER: RESPOND ONLY IN {language.upper()}.
         """
         return prompt
+#     def _build_recipe_prompt(
+#     self, 
+#     request: RecipeGenerationRequest, 
+#     taste_profile: UserTasteProfile,
+#     language: str
+# ) -> str:
+    
+#         prompt = f"""
+#         LANGUAGE REQUIREMENT: YOU MUST RESPOND COMPLETELY IN {language.upper()} LANGUAGE.
+#         DO NOT USE ANY OTHER LANGUAGE. EVERY SINGLE WORD, TITLE, DESCRIPTION, INGREDIENT NAME, INSTRUCTION, AND TAG MUST BE WRITTEN IN {language}.
+        
+#         Generate a detailed recipe with the following requirements:
+        
+#         Theme: {request.theme}
+#         Language: {language}
+#         Use pantry: {request.use_pantry}
+        
+#         User preferences:
+#         - Spice level: {taste_profile.spice_level if taste_profile else 2}/5
+#         - Oil preference: {taste_profile.oil_preference if taste_profile else 'moderate'}
+#         - Cooking time: {taste_profile.cooking_time_preference if taste_profile else 30} minutes
+#         - Likes: {', '.join(taste_profile.likes) if taste_profile and taste_profile.likes else 'None'}
+#         - Dislikes: {', '.join(taste_profile.dislikes) if taste_profile and taste_profile.dislikes else 'None'}
+#         - Dietary: {', '.join(taste_profile.dietary_preferences) if taste_profile and taste_profile.dietary_preferences else 'None'}
+#         - Allergies: {', '.join(taste_profile.allergies) if taste_profile and taste_profile.allergies else 'None'}
+        
+#         FORMAT REQUIREMENTS:
+#         - All content must be in {language}
+#         - Use local ingredient names in {language}
+#         - Use local measurement units appropriate for {language}
+#         - Use cooking terms familiar in {language}-speaking regions
+        
+#         JSON Response Format (all fields in {language}):
+#         {{
+#             "title": "Recipe title in {language}",
+#             "description": "Description in {language}",
+#             "ingredients": [
+#                 {{"name": "ingredient in {language}", "quantity": "amount", "unit": "unit in {language}"}}
+#             ],
+#             "instructions": ["step in {language}", "step in {language}"],
+#             "cooking_time": as provided in user preferences,
+#             "difficulty": "difficulty level in {language}",
+#             "servings": 4,
+#             "nutrition_info": {{
+#                 "calories": "approx",
+#                 "protein": "g",
+#                 "carbs": "g", 
+#                 "fat": "g"
+#             }},
+#             "tags": ["tag in {language}"]
+#         }}
+        
+#         FINAL REMINDER: RESPOND ONLY IN {language.upper()}.
+#         """
+#         return prompt
     
     def _build_pantry_prompt(
         self, 

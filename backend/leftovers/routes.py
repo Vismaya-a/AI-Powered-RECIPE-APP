@@ -6,7 +6,7 @@ from db.main import get_session
 from auth.service import get_current_user
 from db.models import User
 from leftovers.schemas import (
-    LeftoverIngredientCreate,
+    LeftoverIngredientBase,
     LeftoverIngredientResponse,
     LeftoverTransformRequest,
     TransformationSuggestion
@@ -30,22 +30,45 @@ async def get_user_leftover_ingredients(
 
 @router.post("/ingredients", response_model=LeftoverIngredientResponse)
 async def add_new_leftover_ingredient(
-    leftover_data: LeftoverIngredientCreate,
+    leftover_data: LeftoverIngredientBase,
     current_user: User = Depends(get_current_user),
     session: AsyncSession = Depends(get_session)
 ):
     leftover = await add_leftover_ingredient(session, current_user.id, leftover_data)
     return leftover
 
+# @router.post("/transform", response_model=List[TransformationSuggestion])
+# async def transform_leftovers(
+#     request: LeftoverTransformRequest,
+#     current_user: User = Depends(get_current_user),
+#     session: AsyncSession = Depends(get_session)
+# ):
+#     try:
+#         transformations = await leftover_service.transform_leftovers(
+#             request.leftover_ingredients,
+#             request.language
+#         )
+#         return transformations
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=str(e))
 @router.post("/transform", response_model=List[TransformationSuggestion])
 async def transform_leftovers(
-    request: LeftoverTransformRequest,
+    request: LeftoverTransformRequest,  # Remove this - we don't need user input
     current_user: User = Depends(get_current_user),
     session: AsyncSession = Depends(get_session)
 ):
     try:
+        # Get leftover ingredients FROM DATABASE instead of request
+        leftovers = await get_leftover_ingredients(session, current_user.id)
+        
+        # Extract just the ingredient names for the AI
+        leftover_names = [f"{item.ingredient_name} ({item.quantity})" for item in leftovers]
+        
+        if not leftover_names:
+            raise HTTPException(status_code=400, detail="No leftover ingredients found")
+        
         transformations = await leftover_service.transform_leftovers(
-            request.leftover_ingredients,
+            leftover_names,  # Use database leftovers
             request.language
         )
         return transformations

@@ -1,5 +1,5 @@
 from sqlmodel import SQLModel, Field, Relationship, Column, JSON
-from typing import Optional, List, Dict, Any,Union
+from typing import Optional, List, Dict, Any
 from datetime import datetime
 from sqlalchemy import DateTime, Text
 from sqlalchemy.sql import func
@@ -15,11 +15,23 @@ class User(SQLModel, table=True):
         sa_column=Column(DateTime(timezone=True), server_default=func.now())
     )
     
-    # Relationships - CHANGED TO STRINGS
-    taste_profile: Optional["UserTasteProfile"] = Relationship(back_populates="user")
-    pantry_items: List["PantryItem"] = Relationship(back_populates="user")
-    saved_recipes: List["SavedRecipe"] = Relationship(back_populates="user")
-    leftover_ingredients: List["LeftoverIngredient"] = Relationship(back_populates="user")
+    # Relationships with cascade delete
+    taste_profile: Optional["UserTasteProfile"] = Relationship(
+        back_populates="user", 
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"}
+    )
+    pantry_items: List["PantryItem"] = Relationship(
+        back_populates="user", 
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"}
+    )
+    saved_recipes: List["SavedRecipe"] = Relationship(
+        back_populates="user", 
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"}
+    )
+    leftover_ingredients: List["LeftoverIngredient"] = Relationship(
+        back_populates="user", 
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"}
+    )
 
 class UserTasteProfile(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -36,7 +48,6 @@ class UserTasteProfile(SQLModel, table=True):
         sa_column=Column(DateTime(timezone=True), server_default=func.now())
     )
     
-    # Relationships - CHANGED TO STRINGS
     user: "User" = Relationship(back_populates="taste_profile")
 
 class PantryItem(SQLModel, table=True):
@@ -52,7 +63,6 @@ class PantryItem(SQLModel, table=True):
         sa_column=Column(DateTime(timezone=True), server_default=func.now())
     )
     
-    # Relationships - CHANGED TO STRINGS
     user: "User" = Relationship(back_populates="pantry_items")
 
 class SavedRecipe(SQLModel, table=True):
@@ -69,17 +79,16 @@ class SavedRecipe(SQLModel, table=True):
         sa_column=Column(DateTime(timezone=True), server_default=func.now())
     )
     
-    # Relationships - CHANGED TO STRINGS
     user: "User" = Relationship(back_populates="saved_recipes")
-    leftover_ingredients: List["LeftoverIngredient"] = Relationship(back_populates="source_recipe")
-
+   
 class LeftoverIngredient(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     user_id: int = Field(foreign_key="user.id")
     ingredient_name: str
     quantity: Optional[str] = None
     state: str = Field(default="fresh")
-    created_from_recipe: Optional[int] = Field(foreign_key="savedrecipe.id")
+    # REMOVE THIS LINE: created_from_recipe: Optional[int] = Field(foreign_key="savedrecipe.id")
+    created_from_recipe: Optional[int] = None  # Just a simple integer, no foreign key
     created_at: Optional[datetime] = Field(
         default_factory=datetime.utcnow,
         sa_column=Column(DateTime(timezone=True), server_default=func.now())
@@ -87,4 +96,5 @@ class LeftoverIngredient(SQLModel, table=True):
     
     # Relationships - CHANGED TO STRINGS
     user: "User" = Relationship(back_populates="leftover_ingredients")
-    source_recipe: Optional["SavedRecipe"] = Relationship(back_populates="leftover_ingredients")
+    # Remove this relationship too since we don't need it
+    # source_recipe: Optional["SavedRecipe"] = Relationship(back_populates="leftover_ingredients")

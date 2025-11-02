@@ -2,7 +2,7 @@ import json
 import google.generativeai as genai
 from sqlmodel import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from typing import List, Dict, Any
+from typing import List, Dict, Any,Optional
 
 from db.models import SavedRecipe, User, UserTasteProfile, PantryItem
 from recipes.schemas import RecipeGenerationRequest, PantrySuggestionRequest
@@ -225,3 +225,42 @@ async def get_saved_recipes(
         .order_by(SavedRecipe.created_at.desc())
     )
     return result.scalars().all()
+
+# Add these functions to your existing recipes/service.py
+
+async def get_saved_recipe_by_id(session: AsyncSession, recipe_id: int, user_id: int) -> Optional[SavedRecipe]:
+    """Get a single saved recipe by ID for a specific user"""
+    try:
+        result = await session.execute(
+            select(SavedRecipe).where(
+                SavedRecipe.id == recipe_id,
+                SavedRecipe.user_id == user_id
+            )
+        )
+        recipe = result.scalar_one_or_none()
+        return recipe
+    except Exception as e:
+        #logger.error(f"Error getting saved recipe {recipe_id}: {str(e)}")
+        raise
+
+async def delete_saved_recipe(session: AsyncSession, recipe_id: int, user_id: int) -> bool:
+    """Delete a saved recipe by ID for a specific user"""
+    try:
+        result = await session.execute(
+            select(SavedRecipe).where(
+                SavedRecipe.id == recipe_id,
+                SavedRecipe.user_id == user_id
+            )
+        )
+        recipe = result.scalar_one_or_none()
+        
+        if not recipe:
+            return False
+            
+        await session.delete(recipe)
+        await session.commit()
+        return True
+    except Exception as e:
+        await session.rollback()
+        logger.error(f"Error deleting saved recipe {recipe_id}: {str(e)}")
+        raise

@@ -1,5 +1,3 @@
-
-
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
@@ -13,7 +11,7 @@ from recipes.schemas import (
     PantrySuggestionRequest,
     PantryRecipeResponse
 )
-from recipes.service import recipe_service, save_recipe, get_saved_recipes
+from recipes.service import recipe_service, save_recipe, get_saved_recipes, get_saved_recipe_by_id, delete_saved_recipe
 
 router = APIRouter()
 
@@ -53,6 +51,22 @@ async def get_user_saved_recipes(
     recipes = await get_saved_recipes(session, current_user.id)
     return recipes
 
+@router.get("/saved/{recipe_id}", response_model=SavedRecipeResponse)
+async def get_saved_recipe(
+    recipe_id: int,
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session)
+):
+    try:
+        recipe = await get_saved_recipe_by_id(session, recipe_id, current_user.id)
+        if not recipe:
+            raise HTTPException(status_code=404, detail="Recipe not found")
+        return recipe
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @router.post("/save-generated", response_model=SavedRecipeResponse)
 async def save_generated_recipe(
     generated_recipe: RecipeResponse,
@@ -72,5 +86,21 @@ async def save_generated_recipe(
         saved_recipe = await save_recipe(session, current_user.id, save_data)
         return saved_recipe
         
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.delete("/saved/{recipe_id}")
+async def delete_saved_recipe_endpoint(
+    recipe_id: int,
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session)
+):
+    try:
+        success = await delete_saved_recipe(session, recipe_id, current_user.id)
+        if not success:
+            raise HTTPException(status_code=404, detail="Recipe not found")
+        return {"message": "Recipe deleted successfully"}
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

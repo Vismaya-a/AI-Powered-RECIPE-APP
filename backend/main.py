@@ -11,6 +11,7 @@ from users.routes import router as users_router
 from recipes.routes import router as recipes_router
 from pantry.routes import router as pantry_router
 from leftovers.routes import router as leftovers_router
+from dashboard.routes import router as dashboard_router
 from db.main import get_session
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -46,8 +47,9 @@ app.add_middleware(
 app.include_router(auth_router,prefix="/auth",tags=["Authentication"])
 app.include_router(users_router,prefix="/users",tags=["Users"])
 app.include_router(recipes_router,prefix="/recipes",tags=["Recipes"])
-app.include_router(pantry_router,prefix="/pantry",tags=["Pantry"])
-app.include_router(leftovers_router,prefix="/leftovers",tags=["Leftovers"])
+app.include_router(pantry_router,prefix="/kitchen",tags=["Pantry"])
+app.include_router(leftovers_router,prefix="/remainings",tags=["Leftovers"])
+app.include_router(dashboard_router,prefix="/dboard",tags=["Dashboard"])
 
 @app.get("/")
 async def root():

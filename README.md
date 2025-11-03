@@ -299,39 +299,67 @@ AI-Powered-RECIPE-APP/
 
 ### Authentication
 
-- `POST /auth/register` - User registration
+-   `POST /auth/register` - User registration ✅
 
-- `POST /auth/login` - User login
+-   `POST /auth/login` - User login ✅
 
-- `POST /auth/logout` - User logout
+
 
 ### Recipes
 
-- `POST /recipes/generate` - Generate AI recipes
+-   `POST /recipes/generate` - Generate AI recipes ✅
 
-- `GET /recipes/saved` - Get saved recipes
+-   `GET /recipes/saved` - Get saved recipes ✅
 
-- `POST /recipes/save` - Save generated recipe
+-   `POST /recipes/save-generated` - Save generated recipe ✅ (not `/recipes/save`)
 
-- `DELETE /recipes/saved/{id}` - Delete saved recipe
+-   `DELETE /recipes/saved/{recipe_id}` - Delete saved recipe ✅
 
 ### User Management
 
-- `GET /users/profile` - Get user profile
+-   `GET /users/profile` - Get user profile ✅
 
-- `POST /users/taste-profile` - Create taste profile
+-   `POST /users/taste-profile` - Create taste profile ✅
 
-- `PUT /users/taste-profile` - Update taste profile
+-   `PUT /users/taste-profile` - Update taste profile ✅
 
-### Pantry & Leftovers
+-   `GET /users/taste-profile` - Get taste profile ✅
 
-- `GET /pantry/items` - Get pantry items
+-   `GET /users/taste-profile/or-create` - Get or create taste profile ✅
 
-- `POST /pantry/items` - Add pantry item
+### Pantry
 
-- `POST /leftovers/transform` - Transform leftovers
+-   `GET /kitchen/items` - Get pantry items ✅ (not `/pantry/items`)
 
-- `GET /leftovers/saved` - Get saved transformations
+-   `POST /kitchen/items` - Add pantry item ✅ (not `/pantry/items`)
+
+-   `DELETE /kitchen/items/{item_id}` - Delete pantry item ✅
+
+-   `PUT /kitchen/items/bulk` - Bulk update pantry items ✅
+
+-   `POST /kitchen/items/bulk-add` - Bulk add pantry items ✅
+
+### Leftovers
+
+-   `GET /remainings/ingredients` - Get leftover ingredients ✅
+
+-   `POST /remainings/ingredients` - Add leftover ingredient ✅
+
+-   `POST /remainings/transform` - Transform leftovers ✅ (not `/leftovers/transform`)
+
+-   `POST /remainings/save-transformation` - Save transformation idea ✅
+
+-   `GET /remainings/saved-transformations` - Get saved transformations ✅ (not `/leftovers/saved`)
+
+-   `GET /remainings/saved-transformations/{id}` - Get specific transformation ✅
+
+-   `DELETE /remainings/saved-transformations/{id}` - Delete transformation ✅
+
+-   `DELETE /remainings/ingredients/{id}` - Delete leftover ingredient ✅
+
+### Dashboard
+
+-   `GET /dboard/stats` - Get dashboard statistics ✅
 
 
 

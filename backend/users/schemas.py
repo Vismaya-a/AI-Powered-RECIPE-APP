@@ -1,3 +1,4 @@
+
 from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime
@@ -11,6 +12,9 @@ class TasteProfileBase(BaseModel):
     oil_preference: str = "moderate"
     cooking_time_preference: Optional[int] = None
 
+class TasteProfileCreate(TasteProfileBase):
+    pass
+
 class TasteProfileUpdate(BaseModel):
     likes: Optional[List[str]] = None
     dislikes: Optional[List[str]] = None
@@ -21,8 +25,12 @@ class TasteProfileUpdate(BaseModel):
     cooking_time_preference: Optional[int] = None
 
 class TasteProfileResponse(TasteProfileBase):
+    id: int
     user_id: int
     updated_at: datetime
+    
+    class Config:
+        from_attributes = True
 
 class UserProfileResponse(BaseModel):
     id: int

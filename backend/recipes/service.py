@@ -35,35 +35,6 @@ class RecipeService:
             raise Exception(f"Error generating recipe: {str(e)}")
     
 
-    async def generate_pantry_suggestions(
-    self,
-    request: PantrySuggestionRequest,
-    user: User,
-    session: AsyncSession
-) -> List[Dict[str, Any]]:
-    
-    # Get user taste profile
-        result = await session.execute(
-            select(UserTasteProfile).where(UserTasteProfile.user_id == user.id)
-        )
-        taste_profile = result.scalar_one_or_none()  # Use scalar_one_or_none() instead of first()
-        
-        # Get pantry items using helper function
-        pantry_items = await self.get_pantry_items(session, user.id)
-        ingredient_names = [item.ingredient_name for item in pantry_items]
-        
-        if not ingredient_names:
-            raise Exception("No ingredients found in pantry")
-        
-        # Build prompt with pantry ingredients
-        prompt = self._build_pantry_prompt(ingredient_names, taste_profile, request.language)
-        
-        try:
-            response = self.model.generate_content(prompt)
-            recipes = self._parse_pantry_recipes_response(response.text)
-            return recipes
-        except Exception as e:
-            raise Exception(f"Error generating pantry recipes: {str(e)}")
     def _build_recipe_prompt(
         self, 
         request: RecipeGenerationRequest, 
@@ -71,28 +42,47 @@ class RecipeService:
         language: str
     ) -> str:
         
+        # Build exclusion lists
+        allergies = taste_profile.allergies if taste_profile and taste_profile.allergies else []
+        dislikes = taste_profile.dislikes if taste_profile and taste_profile.dislikes else []
+        absolute_exclusions = list(set(allergies + dislikes))
+        exclusions_text = ", ".join(absolute_exclusions) if absolute_exclusions else "None"
+        
         prompt = f"""
-        Generate a detailed recipe in {language} with the following requirements:
+        Generate a detailed recipe in {language} based on the user's request.
         
-        Main ingredient/theme: {request.theme}
+        REQUEST: "{request.theme}"
         
-        User preferences:
-        - Spice level: {taste_profile.spice_level if taste_profile else 2}/5
-        - Oil preference: {taste_profile.oil_preference if taste_profile else 'moderate'}
-        - Cooking time: {taste_profile.cooking_time_preference if taste_profile else 30} minutes preferred
-        - Likes: {', '.join(taste_profile.likes) if taste_profile and taste_profile.likes else 'None specified'}
+        USER PREFERENCES:
+        - Likes: {', '.join(taste_profile.likes) if taste_profile and taste_profile.likes else 'None'}
         - Dislikes: {', '.join(taste_profile.dislikes) if taste_profile and taste_profile.dislikes else 'None'}
+        - Allergies: {', '.join(taste_profile.allergies) if taste_profile and taste_profile.allergies else 'None'}
         - Dietary: {', '.join(taste_profile.dietary_preferences) if taste_profile and taste_profile.dietary_preferences else 'None'}
+        - Spice: {taste_profile.spice_level if taste_profile else 2}/5
+        - Oil: {taste_profile.oil_preference if taste_profile else 'moderate'}
+        - Cooking time: {taste_profile.cooking_time_preference if taste_profile else 30} min preferred
+        
+        DECISION RULES:
+        1. If the requested theme DOES NOT contain any disliked/allergic ingredients:
+        - Create the EXACT recipe as requested
+        - Modify only cooking style, spices, or proportions to match preferences
+        
+        2. If the requested theme CONTAINS disliked/allergic ingredients:
+        - Create the CLOSEST POSSIBLE alternative that excludes problematic ingredients
+        - Keep the same dish type and cooking style
+        - Explain the substitution in the description
+        
+        3. NEVER include ingredients from the dislikes/allergies list
         
         Please provide the recipe in this exact JSON format:
         {{
             "title": "Recipe Title",
-            "description": "Brief description",
+            "description": "Brief description explaining any substitutions made",
             "ingredients": [
                 {{"name": "ingredient", "quantity": "amount", "unit": "unit"}}
             ],
             "instructions": ["step 1", "step 2", ...],
-            "cooking_time": as provided in user preferences,
+            "cooking_time": "appropriate time",
             "difficulty": "Easy/Medium/Hard",
             "servings": 4,
             "nutrition_info": {{
@@ -105,8 +95,6 @@ class RecipeService:
         }}
         """
         return prompt
-
-
     def _build_pantry_prompt(
     self, 
     ingredients: List[str], 
@@ -114,26 +102,34 @@ class RecipeService:
     language: str
 ) -> str:
     
-    # Handle None taste_profile safely
-        spice_level = taste_profile.spice_level if taste_profile else 2
-        oil_preference = taste_profile.oil_preference if taste_profile else 'moderate'
-        dietary_preferences = ', '.join(taste_profile.dietary_preferences) if taste_profile and taste_profile.dietary_preferences else 'None'
+    # Filter out excluded ingredients
+        allergies = taste_profile.allergies if taste_profile and taste_profile.allergies else []
+        dislikes = taste_profile.dislikes if taste_profile and taste_profile.dislikes else []
+        absolute_exclusions = list(set(allergies + dislikes))
+        
+        safe_ingredients = [
+            ing for ing in ingredients 
+            if ing.lower() not in [excl.lower() for excl in absolute_exclusions]
+        ]
         
         prompt = f"""
-        Generate 3 complete recipes in {language} that can be made primarily with these pantry ingredients: {', '.join(ingredients)}
+        Generate 3 complete recipes in {language} using available ingredients while respecting user restrictions.
         
-        Consider user preferences:
-        - Spice level: {spice_level}/5
-        - Oil preference: {oil_preference}
-        - Dietary: {dietary_preferences}
+        AVAILABLE INGREDIENTS: {', '.join(safe_ingredients)}
         
-        For each recipe, provide:
-        1. Use as many pantry ingredients as possible
-        2. List any missing ingredients needed
-        3. Provide complete cooking instructions
-        4. Include nutrition information
+        USER RESTRICTIONS:
+        - Allergies: {', '.join(taste_profile.allergies) if taste_profile and taste_profile.allergies else 'None'}
+        - Dislikes: {', '.join(taste_profile.dislikes) if taste_profile and taste_profile.dislikes else 'None'}
+        - Dietary: {', '.join(taste_profile.dietary_preferences) if taste_profile and taste_profile.dietary_preferences else 'None'}
+        - Likes: {', '.join(taste_profile.likes) if taste_profile and taste_profile.likes else 'None'}
         
-        Return in JSON format:
+        RULES:
+        - Only use ingredients from the available list
+        - Never include allergic or disliked ingredients
+        - Prioritize recipes that incorporate user's liked ingredients
+        - Adapt recipes to match dietary preferences
+        
+        Return in this exact JSON format:
         {{
             "recipes": [
                 {{
@@ -160,6 +156,7 @@ class RecipeService:
         }}
         """
         return prompt
+
     def _parse_recipe_response(self, response_text: str) -> Dict[str, Any]:
         try:
             start = response_text.find('{')
@@ -262,5 +259,5 @@ async def delete_saved_recipe(session: AsyncSession, recipe_id: int, user_id: in
         return True
     except Exception as e:
         await session.rollback()
-        logger.error(f"Error deleting saved recipe {recipe_id}: {str(e)}")
+        
         raise

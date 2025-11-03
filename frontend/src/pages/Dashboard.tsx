@@ -1,8 +1,9 @@
+
 import { useAuth } from '../contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Link } from 'react-router-dom';
-import { ChefHat, Package, Sparkles, UtensilsCrossed, RefreshCw, AlertCircle } from 'lucide-react';
+import { ChefHat, Package, Sparkles, Recycle, RefreshCw, AlertCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { api } from '../utils/api';
 import heroKitchen from '../assets/hero-kitchen.jpg';
@@ -37,37 +38,13 @@ export default function Dashboard() {
         try {
             setError(null);
             setIsLoading(true);
-            // console.log('🚀 Starting dashboard stats fetch...');
 
-            // Test the API call directly
-            const response = await fetch('/dashboard/stats', {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
-            });
+            // Use the API function instead of direct fetch
+            const dashboardStats = await api.getDashboardStats();
 
-            // console.log('📡 Response status:', response.status);
-            // console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
+            console.log('📊 Dashboard stats received:', dashboardStats);
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const rawData = await response.text();
-            // console.log('📡 Raw response:', rawData);
-
-            let dashboardStats;
-            try {
-                dashboardStats = JSON.parse(rawData);
-                // console.log('📡 Parsed data:', dashboardStats);
-            } catch (parseError) {
-                console.error('❌ JSON parse error:', parseError);
-                throw new Error('Invalid JSON response from server');
-            }
-
-            // Validate the data structure
+            // Validate and set the stats
             if (dashboardStats && typeof dashboardStats === 'object') {
                 const validatedStats = {
                     pantry_items_count: Number(dashboardStats.pantry_items_count) || 0,
@@ -76,7 +53,7 @@ export default function Dashboard() {
                     leftover_items_count: Number(dashboardStats.leftover_items_count) || 0
                 };
 
-                // console.log('✅ Validated stats:', validatedStats);
+                console.log('✅ Validated stats:', validatedStats);
                 setStats(validatedStats);
             } else {
                 console.error('❌ Invalid data structure:', dashboardStats);
@@ -121,7 +98,7 @@ export default function Dashboard() {
         {
             title: 'Use Leftovers',
             description: 'Transform leftovers into delicious meals',
-            icon: UtensilsCrossed,
+            icon: Recycle,
             href: '/leftovers',
             gradient: 'bg-accent',
         },
@@ -240,7 +217,7 @@ export default function Dashboard() {
                     <Card className="bg-gradient-card">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">Leftover Items</CardTitle>
-                            <UtensilsCrossed className="h-4 w-4 text-muted-foreground" />
+                            <Recycle className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold" data-testid="leftovers-count">
@@ -252,39 +229,6 @@ export default function Dashboard() {
                         </CardContent>
                     </Card>
                 </div>
-
-                {/* Debug Information - Always show in development */}
-                {/* <div className="mt-8 p-4 bg-muted rounded-lg border">
-                    <h3 className="font-semibold mb-2 text-lg">🔍 Debug Information</h3>
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                            <strong>Current Stats:</strong>
-                            <pre className="mt-1 p-2 bg-background rounded text-xs">
-                                {JSON.stringify(stats, null, 2)}
-                            </pre>
-                        </div>
-                        <div>
-                            <strong>State:</strong>
-                            <div className="mt-1 space-y-1">
-                                <div>Loading: <span className="font-mono">{isLoading.toString()}</span></div>
-                                <div>Refreshing: <span className="font-mono">{refreshing.toString()}</span></div>
-                                <div>Error: <span className="font-mono text-destructive">{error || 'None'}</span></div>
-                                <div>User: <span className="font-mono">{user?.username || 'None'}</span></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="mt-4 flex gap-2">
-                        <Button onClick={() => console.log('Current stats:', stats)} variant="outline" size="sm">
-                            Log Stats to Console
-                        </Button>
-                        <Button onClick={() => console.log('User token:', localStorage.getItem('token'))} variant="outline" size="sm">
-                            Log Token
-                        </Button>
-                        <Button onClick={fetchDashboardStats} variant="outline" size="sm">
-                            Test API Call
-                        </Button>
-                    </div>
-                </div> */}
             </div>
         </div>
     );
